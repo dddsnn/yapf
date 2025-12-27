@@ -27,7 +27,11 @@ classifiers = [
     'Topic :: Software Development :: Libraries :: Python Modules',
     'Topic :: Software Development :: Quality Assurance',
 ]
-dependencies = ['platformdirs>=3.5.1', 'tomli>=2.0.1; python_version<"3.11"']
+dependencies = [
+    'platformdirs>=3.5.1',
+    'tomli>=2.0.1; python_version<"3.11"',
+    'libcst (>=1.8.6,<2)'
+]
 
 [project.scripts]
 yapf = "yapf:run_main"
