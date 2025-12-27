@@ -37,6 +37,7 @@
 # IDEs
 /.idea
 /.vscode/settings.json
+/.zed
 
 # Virtual Environment
 /.venv*/
