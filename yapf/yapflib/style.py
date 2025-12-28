@@ -17,6 +17,7 @@ import os
 import re
 import sys
 import textwrap
+import typing as t
 from configparser import ConfigParser
 
 from yapf.yapflib import errors
@@ -30,6 +31,9 @@ else:
 class StyleConfigError(errors.YapfError):
   """Raised when there's a problem reading the style configuration."""
   pass
+
+
+Config = dict[str, t.Any]
 
 
 def Get(setting_name):

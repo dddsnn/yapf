@@ -35,6 +35,8 @@ import codecs
 import difflib
 import re
 
+import libcst as cst
+
 from yapf.pyparser import pyparser
 from yapf.pytree import blank_line_calculator
 from yapf.pytree import comment_splicer
@@ -45,6 +47,7 @@ from yapf.pytree import split_penalty
 from yapf.pytree import subtype_assigner
 from yapf.yapflib import errors
 from yapf.yapflib import file_resources
+from yapf.yapflib import format
 from yapf.yapflib import identify_container
 from yapf.yapflib import reformatter
 from yapf.yapflib import style
@@ -211,6 +214,13 @@ def FormatCode(unformatted_source,
     return code_diff, code_diff.strip() != ''  # pylint: disable=g-explicit-bool-comparison # noqa
 
   return reformatted_source, True
+
+
+def FormatCstModule(module: cst.Module, style_config=None, lines=None):
+  config = style.CreateStyleFromConfig(style_config)
+  formatter = cst_formatter.ModuleFormatter(module, config)
+  formatted_module = module.visit(formatter)
+  return formatted_module.code
 
 
 def ReadFile(filename, logger=None):
