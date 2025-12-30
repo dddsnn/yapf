@@ -28,3 +28,9 @@ class ModuleFormatter(cst.CSTTransformer):
     indent_char = '\t' if self._config['USE_TABS'] else ' '
     indent = indent_char * self._config['INDENT_WIDTH']
     return updated_node.with_changes(indent=indent)
+
+  def leave_Call(self, original_node: cst.Call,
+                 updated_node: cst.Call) -> VisitorLeaveUpdate:
+
+    return updated_node.with_changes(
+        whitespace_after_func=cst.SimpleWhitespace(''))

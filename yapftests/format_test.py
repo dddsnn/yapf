@@ -92,3 +92,12 @@ class ModuleFormatterTest(yapf_test_helper.YAPFTest):
               pass
     """)
     self._Check(unformatted_code, expected_formatted_code)
+
+  def testRemovesWhitespaceBeforeArgsList(self):
+    unformatted_code = textwrap.dedent("""\
+        function_name ()
+    """)
+    expected_formatted_code = textwrap.dedent("""\
+       function_name()
+    """)
+    self._Check(unformatted_code, expected_formatted_code)
