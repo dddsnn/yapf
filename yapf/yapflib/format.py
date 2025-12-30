@@ -6,11 +6,14 @@ VisitorLeaveUpdate = (
     cst.CSTNodeT | cst.RemovalSentinel | cst.FlattenSentinel[cst.CSTNodeT])
 
 
-class ModuleFormatter(cst.CSTTransformer):
+class BaseFormatter(cst.CSTTransformer):
 
   def __init__(self, module: cst.Module, config: style.Config):
     self._module = module
     self._config = config
+
+
+class ModuleFormatter(BaseFormatter):
 
   def visit_Module(self, node: cst.Module) -> bool:
     if node is not self._module:
