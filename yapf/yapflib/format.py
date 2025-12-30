@@ -22,7 +22,7 @@ class ModuleFormatter(BaseFormatter):
   def visit_Module(self, node: cst.Module) -> bool:
     if node is not self._module:
       raise ValueError(
-          "Formatter is visiting a module its not been configured for.")
+          "Moduel formatter is visiting a module its not been configured for.")
     return True
 
   def leave_Module(self, original_node: cst.Module,
@@ -37,7 +37,8 @@ class ModuleFormatter(BaseFormatter):
     return updated_node.with_changes(indent=indent)
 
   def visit_Call(self, node: cst.Call) -> bool:
-    self._call_formatter_stack.append(CallFormatter(self._module, self._config))
+    self._call_formatter_stack.append(
+        CallFormatter(self._module, self._config, node))
     return False
 
   def leave_Call(self, original_node: cst.Call,
@@ -48,12 +49,33 @@ class ModuleFormatter(BaseFormatter):
 
 class CallFormatter(BaseFormatter):
 
+  def __init__(self, module: cst.Module, config: style.Config, call: cst.Call):
+    super().__init__(module, config)
+    self._call = call
+
+  def visit_Call(self, node: cst.Call) -> bool:
+    if node is not self._call:
+      raise ValueError(
+          "Call formatter is visiting a call its not been configured for.")
+    return True
+
   def leave_Call(self, original_node: cst.Call,
                  updated_node: cst.Call) -> VisitorLeaveUpdate:
     return updated_node.with_changes(
-        whitespace_after_func=cst.SimpleWhitespace(''))
+        whitespace_after_func=cst.SimpleWhitespace(''),
+        whitespace_before_args=cst.SimpleWhitespace(''))
 
   def leave_Arg(self, original_node: cst.Arg,
                 updated_node: cst.Arg) -> VisitorLeaveUpdate:
     return updated_node.with_changes(
-        whitespace_after_star=cst.SimpleWhitespace(''))
+        whitespace_after_star=cst.SimpleWhitespace(''),
+        whitespace_after_arg=cst.SimpleWhitespace(''))
+
+  def leave_Comma(self, original_node: cst.Comma,
+                  updated_node: cst.Comma) -> VisitorLeaveUpdate:
+    whitespace_after_str = ' '
+    if self._call.args and self._call.args[-1].comma is original_node:
+      whitespace_after_str = ''
+    return updated_node.with_changes(
+        whitespace_before=cst.SimpleWhitespace(''),
+        whitespace_after=cst.SimpleWhitespace(whitespace_after_str))
