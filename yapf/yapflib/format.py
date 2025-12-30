@@ -18,6 +18,10 @@ class ModuleFormatter(cst.CSTTransformer):
           "Formatter is visiting a module its not been configured for.")
     return True
 
+  def leave_Module(self, original_node: cst.Module,
+                   updated_node: cst.Module) -> VisitorLeaveUpdate:
+    return updated_node.with_changes(has_trailing_newline=True)
+
   def leave_IndentedBlock(
       self, original_node: cst.IndentedBlock,
       updated_node: cst.IndentedBlock) -> VisitorLeaveUpdate:

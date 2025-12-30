@@ -19,8 +19,8 @@ class ModuleFormatterTest(yapf_test_helper.YAPFTest):
     formatted_module = module.visit(formatter)
     self.assertCodeEqual(expected_formatted_code, formatted_module.code)
 
-  def testDoesNothingOnEmptyModule(self):
-    self._Check('', '')
+  def testOnlyAddsNewlineOnEmptyModule(self):
+    self._Check('', '\n')
 
   def testChangesIndentWidthWithOneLevel(self):
     self.config['INDENT_WIDTH'] = 3
@@ -54,12 +54,12 @@ class ModuleFormatterTest(yapf_test_helper.YAPFTest):
     self.config['USE_TABS'] = True
     self.config['INDENT_WIDTH'] = 1
     unformatted_code = textwrap.dedent("""\
-          if True:
-            pass
+        if True:
+          pass
     """)
     expected_formatted_code = textwrap.dedent("""\
-          if True:
-          \tpass
+        if True:
+        \tpass
     """)
     self._Check(unformatted_code, expected_formatted_code)
 
@@ -67,11 +67,28 @@ class ModuleFormatterTest(yapf_test_helper.YAPFTest):
     self.config['USE_TABS'] = True
     self.config['INDENT_WIDTH'] = 2
     unformatted_code = textwrap.dedent("""\
-          if True:
-            pass
+        if True:
+          pass
     """)
     expected_formatted_code = textwrap.dedent("""\
           if True:
           \t\tpass
+    """)
+    self._Check(unformatted_code, expected_formatted_code)
+
+  def testKeepsExistingNewlineAtEof(self):
+    code = textwrap.dedent("""\
+        if True:
+            pass
+    """)
+    self._Check(code, code)
+
+  def testAddsMissingNewlineAtEof(self):
+    unformatted_code = textwrap.dedent("""\
+          if True:
+            pass""")
+    expected_formatted_code = textwrap.dedent("""\
+          if True:
+              pass
     """)
     self._Check(unformatted_code, expected_formatted_code)
