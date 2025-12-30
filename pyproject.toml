@@ -33,6 +33,9 @@ dependencies = [
     'libcst (>=1.8.6,<2)'
 ]
 
+[project.optional-dependencies]
+test = ['pytest (>=9.0.2,<10)', 'pytest-cov (>=7.0.0,<8)']
+
 [project.scripts]
 yapf = "yapf:run_main"
 yapf-diff = "yapf_third_party.yapf_diff.yapf_diff:main"

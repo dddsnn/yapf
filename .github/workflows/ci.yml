@@ -28,10 +28,6 @@ jobs:
         --disable-pip-version-check
         pip
     - name: Perform package installs
-      run: >-
-        pip install
-        .
-        pytest
-        pytest-cov
+      run: pip install .[test]
     - name: Test with pytest
       run: pytest
