@@ -15,6 +15,10 @@ class BaseFormatter(cst.CSTTransformer):
 
 class ModuleFormatter(BaseFormatter):
 
+  def __init__(self, module: cst.Module, config: style.Config):
+    super().__init__(module, config)
+    self._call_formatter_stack = []
+
   def visit_Module(self, node: cst.Module) -> bool:
     if node is not self._module:
       raise ValueError(
@@ -32,8 +36,24 @@ class ModuleFormatter(BaseFormatter):
     indent = indent_char * self._config['INDENT_WIDTH']
     return updated_node.with_changes(indent=indent)
 
+  def visit_Call(self, node: cst.Call) -> bool:
+    self._call_formatter_stack.append(CallFormatter(self._module, self._config))
+    return False
+
   def leave_Call(self, original_node: cst.Call,
                  updated_node: cst.Call) -> VisitorLeaveUpdate:
+    call_formatter = self._call_formatter_stack.pop()
+    return updated_node.visit(call_formatter)
 
+
+class CallFormatter(BaseFormatter):
+
+  def leave_Call(self, original_node: cst.Call,
+                 updated_node: cst.Call) -> VisitorLeaveUpdate:
     return updated_node.with_changes(
         whitespace_after_func=cst.SimpleWhitespace(''))
+
+  def leave_Arg(self, original_node: cst.Arg,
+                updated_node: cst.Arg) -> VisitorLeaveUpdate:
+    return updated_node.with_changes(
+        whitespace_after_star=cst.SimpleWhitespace(''))
