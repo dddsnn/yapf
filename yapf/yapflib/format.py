@@ -12,6 +12,18 @@ class BaseFormatter(cst.CSTTransformer):
     self._module = module
     self._config = config
 
+  def leave_Comma(self,
+                  original_node: cst.Comma,
+                  updated_node: cst.Comma,
+                  *,
+                  no_whitespace_after: bool = False) -> VisitorLeaveUpdate:
+    whitespace_after_str = ' '
+    if no_whitespace_after:
+      whitespace_after_str = ''
+    return updated_node.with_changes(
+        whitespace_before=cst.SimpleWhitespace(''),
+        whitespace_after=cst.SimpleWhitespace(whitespace_after_str))
+
 
 class ModuleFormatter(BaseFormatter):
 
@@ -73,9 +85,7 @@ class CallFormatter(BaseFormatter):
 
   def leave_Comma(self, original_node: cst.Comma,
                   updated_node: cst.Comma) -> VisitorLeaveUpdate:
-    whitespace_after_str = ' '
     if self._call.args and self._call.args[-1].comma is original_node:
-      whitespace_after_str = ''
-    return updated_node.with_changes(
-        whitespace_before=cst.SimpleWhitespace(''),
-        whitespace_after=cst.SimpleWhitespace(whitespace_after_str))
+      return super().leave_Comma(
+          original_node, updated_node, no_whitespace_after=True)
+    return super().leave_Comma(original_node, updated_node)

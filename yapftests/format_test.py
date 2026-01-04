@@ -96,6 +96,154 @@ class ModuleFormatterTest(FormatterTest):
     """)
     self._Check(unformatted_code, expected_formatted_code)
 
+  def testRemovesExtraneousWhitespaceAroundCommasInArgs(self):
+    unformatted_code = textwrap.dedent("""\
+        function_name(arg1,    arg2,  arg3)
+    """)
+    expected_formatted_code = textwrap.dedent("""\
+        function_name(arg1, arg2, arg3)
+    """)
+    self._Check(unformatted_code, expected_formatted_code)
+
+  def testAddsMissingWhitespaceAroundCommasInArgs(self):
+    unformatted_code = textwrap.dedent("""\
+        function_name(arg1,arg2,arg3)
+    """)
+    expected_formatted_code = textwrap.dedent("""\
+        function_name(arg1, arg2, arg3)
+    """)
+    self._Check(unformatted_code, expected_formatted_code)
+
+  def testRemovesExtraneousWhitespaceAroundCommasInImport(self):
+    unformatted_code = textwrap.dedent("""\
+        import a  ,  b
+    """)
+    expected_formatted_code = textwrap.dedent("""\
+        import a, b
+    """)
+    self._Check(unformatted_code, expected_formatted_code)
+
+  def testAddsMissingWhitespaceAroundCommasInImport(self):
+    unformatted_code = textwrap.dedent("""\
+        import a,b
+    """)
+    expected_formatted_code = textwrap.dedent("""\
+        import a, b
+    """)
+    self._Check(unformatted_code, expected_formatted_code)
+
+  def testRemovesExtraneousWhitespaceAroundCommasInImportFrom(self):
+    unformatted_code = textwrap.dedent("""\
+        from x import a  ,  b
+    """)
+    expected_formatted_code = textwrap.dedent("""\
+        from x import a, b
+    """)
+    self._Check(unformatted_code, expected_formatted_code)
+
+  def testAddsMissingWhitespaceAroundCommasInImportFrom(self):
+    unformatted_code = textwrap.dedent("""\
+        from x import a,b
+    """)
+    expected_formatted_code = textwrap.dedent("""\
+        from x import a, b
+    """)
+    self._Check(unformatted_code, expected_formatted_code)
+
+  def testRemovesExtraneousWhitespaceAroundCommasInParams(self):
+    unformatted_code = textwrap.dedent("""\
+        def f(a  ,  b):
+            pass
+    """)
+    expected_formatted_code = textwrap.dedent("""\
+        def f(a, b):
+            pass
+    """)
+    self._Check(unformatted_code, expected_formatted_code)
+
+  def testAddsMissingWhitespaceAroundCommasInParams(self):
+    unformatted_code = textwrap.dedent("""\
+        def f(a,b):
+            pass
+    """)
+    expected_formatted_code = textwrap.dedent("""\
+        def f(a, b):
+            pass
+    """)
+    self._Check(unformatted_code, expected_formatted_code)
+
+  def testRemovesExtraneousWhitespaceAroundCommasInTuple(self):
+    unformatted_code = textwrap.dedent("""\
+        (a  ,  b)
+    """)
+    expected_formatted_code = textwrap.dedent("""\
+        (a, b)
+    """)
+    self._Check(unformatted_code, expected_formatted_code)
+
+  def testAddsMissingWhitespaceAroundCommasInTuple(self):
+    unformatted_code = textwrap.dedent("""\
+        (a,b)
+    """)
+    expected_formatted_code = textwrap.dedent("""\
+        (a, b)
+    """)
+    self._Check(unformatted_code, expected_formatted_code)
+
+  def testRemovesExtraneousWhitespaceAroundCommasInList(self):
+    unformatted_code = textwrap.dedent("""\
+        [a  ,  b]
+    """)
+    expected_formatted_code = textwrap.dedent("""\
+        [a, b]
+    """)
+    self._Check(unformatted_code, expected_formatted_code)
+
+  def testAddsMissingWhitespaceAroundCommasInList(self):
+    unformatted_code = textwrap.dedent("""\
+        [a,b]
+    """)
+    expected_formatted_code = textwrap.dedent("""\
+        [a, b]
+    """)
+    self._Check(unformatted_code, expected_formatted_code)
+
+  def testRemovesExtraneousWhitespaceAroundCommasInSet(self):
+    unformatted_code = textwrap.dedent("""\
+        {a  ,  b}
+    """)
+    expected_formatted_code = textwrap.dedent("""\
+        {a, b}
+    """)
+    self._Check(unformatted_code, expected_formatted_code)
+
+  def testAddsMissingWhitespaceAroundCommasInSet(self):
+    unformatted_code = textwrap.dedent("""\
+        {a,b}
+    """)
+    expected_formatted_code = textwrap.dedent("""\
+        {a, b}
+    """)
+    self._Check(unformatted_code, expected_formatted_code)
+
+  def testRemovesExtraneousWhitespaceAroundCommasInDict(self):
+    unformatted_code = textwrap.dedent("""\
+        {a: None  ,  b: None}
+    """)
+    expected_formatted_code = textwrap.dedent("""\
+        {a: None, b: None}
+    """)
+    self._Check(unformatted_code, expected_formatted_code)
+
+  def testAddsMissingWhitespaceAroundCommasInDict(self):
+    unformatted_code = textwrap.dedent("""\
+        {a: None,b: None}
+    """)
+    expected_formatted_code = textwrap.dedent("""\
+        {a: None, b: None}
+    """)
+    self._Check(unformatted_code, expected_formatted_code)
+
 
 class CallFormatterTest(FormatterTest):
 
@@ -140,24 +288,6 @@ class CallFormatterTest(FormatterTest):
     """)
     self._Check(unformatted_code, expected_formatted_code)
 
-  def testRemovesExtraneousWhitespaceBetweenArgs(self):
-    unformatted_code = textwrap.dedent("""\
-        function_name(arg1,    arg2,  arg3)
-    """)
-    expected_formatted_code = textwrap.dedent("""\
-        function_name(arg1, arg2, arg3)
-    """)
-    self._Check(unformatted_code, expected_formatted_code)
-
-  def testAddsMissingWhitespaceBetweenArgs(self):
-    unformatted_code = textwrap.dedent("""\
-        function_name(arg1,arg2,arg3)
-    """)
-    expected_formatted_code = textwrap.dedent("""\
-        function_name(arg1, arg2, arg3)
-    """)
-    self._Check(unformatted_code, expected_formatted_code)
-
   def testRemovesExtraneousWhitespaceAfterLastArg(self):
     unformatted_code = textwrap.dedent("""\
         function_name(arg1, arg2, arg3   )
@@ -176,7 +306,7 @@ class CallFormatterTest(FormatterTest):
     """)
     self._Check(unformatted_code, expected_formatted_code)
 
-  def testRemovesExtraneousWhitespaceTrailingCommaInArgsList(self):
+  def testRemovesExtraneousWhitespaceAfterTrailingCommaInArgsList(self):
     self.config['DISABLE_TRAILING_COMMA_HEURISTIC'] = True
     unformatted_code = textwrap.dedent("""\
         function_name(arg1, arg2,   )
