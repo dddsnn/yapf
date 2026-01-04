@@ -29,7 +29,6 @@ class ModuleFormatter(BaseFormatter):
 
   def __init__(self, module: cst.Module, config: style.Config):
     super().__init__(module, config)
-    self._call_formatter_stack = []
 
   def visit_Module(self, node: cst.Module) -> bool:
     if node is not self._module:
@@ -49,13 +48,13 @@ class ModuleFormatter(BaseFormatter):
     return updated_node.with_changes(indent=indent)
 
   def visit_Call(self, node: cst.Call) -> bool:
-    self._call_formatter_stack.append(
-        CallFormatter(self._module, self._config, node))
+    # Handled on leave by a special formatter.
     return False
 
   def leave_Call(self, original_node: cst.Call,
                  updated_node: cst.Call) -> VisitorLeaveUpdate:
-    call_formatter = self._call_formatter_stack.pop()
+    assert original_node is updated_node  # We've not visited children.
+    call_formatter = CallFormatter(self._module, self._config, updated_node)
     return updated_node.visit(call_formatter)
 
 
@@ -64,18 +63,31 @@ class CallFormatter(BaseFormatter):
   def __init__(self, module: cst.Module, config: style.Config, call: cst.Call):
     super().__init__(module, config)
     self._call = call
+    self._call_formatter_stack = []
 
   def visit_Call(self, node: cst.Call) -> bool:
     if node is not self._call:
-      raise ValueError(
-          "Call formatter is visiting a call its not been configured for.")
+      # This is a nested call somewhere in ours, we want a different formatter
+      # to handle it.
+      self._call_formatter_stack.append(
+          CallFormatter(self._module, self._config, node))
+      return False
     return True
 
   def leave_Call(self, original_node: cst.Call,
                  updated_node: cst.Call) -> VisitorLeaveUpdate:
-    return updated_node.with_changes(
-        whitespace_after_func=cst.SimpleWhitespace(''),
-        whitespace_before_args=cst.SimpleWhitespace(''))
+    try:
+      call_formatter = self._call_formatter_stack.pop()
+      # There is a nested formatter that handles this call.
+      return updated_node.visit(call_formatter)
+    except IndexError:
+      if original_node is not self._call:
+        raise ValueError(
+            "Call formatter is leaving a call that's not its own, but there is "
+            "no nested formatter.")
+      return updated_node.with_changes(
+          whitespace_after_func=cst.SimpleWhitespace(''),
+          whitespace_before_args=cst.SimpleWhitespace(''))
 
   def leave_Arg(self, original_node: cst.Arg,
                 updated_node: cst.Arg) -> VisitorLeaveUpdate:

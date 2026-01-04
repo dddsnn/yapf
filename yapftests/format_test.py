@@ -315,3 +315,23 @@ class CallFormatterTest(FormatterTest):
         function_name(arg1, arg2,)
     """)
     self._Check(unformatted_code, expected_formatted_code)
+
+  def testFormatsSingleNestedCall(self):
+    self.config['DISABLE_TRAILING_COMMA_HEURISTIC'] = True
+    unformatted_code = textwrap.dedent("""\
+        f1( a , f2 (b,c, ) )
+    """)
+    expected_formatted_code = textwrap.dedent("""\
+        f1(a, f2(b, c,))
+    """)
+    self._Check(unformatted_code, expected_formatted_code)
+
+  def testFormatsMultipleNestedCalls(self):
+    self.config['DISABLE_TRAILING_COMMA_HEURISTIC'] = True
+    unformatted_code = textwrap.dedent("""\
+        f1( a , f2 (f3(b,c,),d, ) )
+    """)
+    expected_formatted_code = textwrap.dedent("""\
+        f1(a, f2(f3(b, c,), d,))
+    """)
+    self._Check(unformatted_code, expected_formatted_code)
