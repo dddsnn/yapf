@@ -1,3 +1,17 @@
+# -*- coding: utf-8 -*-
+# Copyright 2015 Google Inc. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 import textwrap
 
 import libcst as cst
@@ -335,3 +349,158 @@ class CallFormatterTest(FormatterTest):
         f1(a, f2(f3(b, c,), d,))
     """)
     self._Check(unformatted_code, expected_formatted_code)
+
+  # def testBreaksLongArgsListAfterFirstArgAtTopLevel(self):
+  #   self.config['COLUMN_LIMIT'] = 32
+  #   self.config['INDENT_WIDTH'] = 2
+  #   self.config['CONTINUATION_INDENT_WIDTH'] = 3
+  #   unformatted_code = textwrap.dedent("""\
+  #       function_name(args, that, run, a, bit, too, long)
+  #   """)
+  #   expected_formatted_code = textwrap.dedent("""\
+  #       function_name(args, that, run,
+  #                     a, bit, too,
+  #                     long)
+  #   """)
+  #   self._Check(unformatted_code, expected_formatted_code)
+
+  # def testBreaksLongArgsListAfterFirstArgWhenIndented(self):
+  #   self.config['COLUMN_LIMIT'] = 32
+  #   self.config['INDENT_WIDTH'] = 2
+  #   self.config['CONTINUATION_INDENT_WIDTH'] = 3
+  #   unformatted_code = textwrap.dedent("""\
+  #       if True:
+  #         if True:
+  #           function_name(args, that, run, a, bit, too, long)
+  #   """)
+  #   expected_formatted_code = textwrap.dedent("""\
+  #       if True:
+  #         if True:
+  #           function_name(args, that,
+  #                         run, a, bit,
+  #                         too, long)
+  #   """)
+  #   self._Check(unformatted_code, expected_formatted_code)
+
+  # def testBreaksLongArgsListBeforeFirstArgAtTopLevel(self):
+  #   self.config['COLUMN_LIMIT'] = 32
+  #   self.config['INDENT_WIDTH'] = 2
+  #   self.config['CONTINUATION_INDENT_WIDTH'] = 3
+  #   self.config['SPLIT_BEFORE_FIRST_ARGUMENT'] = True
+  #   unformatted_code = textwrap.dedent("""\
+  #       function_name(args, that, run, a, bit, too, long)
+  #   """)
+  #   expected_formatted_code = textwrap.dedent("""\
+  #       function_name(
+  #          args, that, run, a, bit, too,
+  #          long)
+  #   """)
+  #   self._Check(unformatted_code, expected_formatted_code)
+
+  # def testBreaksLongArgsListBeforeFirstArgWhenIndented(self):
+  #   self.config['COLUMN_LIMIT'] = 32
+  #   self.config['INDENT_WIDTH'] = 2
+  #   self.config['CONTINUATION_INDENT_WIDTH'] = 3
+  #   self.config['SPLIT_BEFORE_FIRST_ARGUMENT'] = True
+  #   unformatted_code = textwrap.dedent("""\
+  #       if True:
+  #         if True:
+  #           function_name(args, that, run, a, bit, too, long)
+  #   """)
+  #   expected_formatted_code = textwrap.dedent("""\
+  #       if True:
+  #         if True:
+  #           function_name(
+  #              args, that, run, a, bit,
+  #              too, long)
+  #   """)
+  #   self._Check(unformatted_code, expected_formatted_code)
+
+  # def testBreaksLongArgsListAfterFirstArgAtTopLevelWithGarbageSpace(self):
+  #   self.config['COLUMN_LIMIT'] = 32
+  #   self.config['INDENT_WIDTH'] = 2
+  #   self.config['CONTINUATION_INDENT_WIDTH'] = 3
+  #   unformatted_code = textwrap.dedent("""\
+  #       function_name(args, that, run, a,bit,too   ,       long)
+  #   """)
+  #   expected_formatted_code = textwrap.dedent("""\
+  #       function_name(args, that, run,
+  #                     a, bit, too,
+  #                     long)
+  #   """)
+  #   self._Check(unformatted_code, expected_formatted_code)
+
+  # def testBreaksLongArgsListAfterFirstArgWhenIndentedWithGarbageSpace(self):
+  #   self.config['COLUMN_LIMIT'] = 32
+  #   self.config['INDENT_WIDTH'] = 2
+  #   self.config['CONTINUATION_INDENT_WIDTH'] = 3
+  #   unformatted_code = textwrap.dedent("""\
+  #       if True:
+  #         if True:
+  #           function_name(args, that, run, a,bit,too   ,       long)
+  #   """)
+  #   expected_formatted_code = textwrap.dedent("""\
+  #       if True:
+  #         if True:
+  #           function_name(args, that,
+  #                         run, a, bit,
+  #                         too, long)
+  #   """)
+  #   self._Check(unformatted_code, expected_formatted_code)
+
+  # def testBreaksLongArgsListBeforeFirstArgAtTopLevelWithGarbageSpace(self):
+  #   self.config['COLUMN_LIMIT'] = 32
+  #   self.config['INDENT_WIDTH'] = 2
+  #   self.config['CONTINUATION_INDENT_WIDTH'] = 3
+  #   self.config['SPLIT_BEFORE_FIRST_ARGUMENT'] = True
+  #   unformatted_code = textwrap.dedent("""\
+  #       function_name(args, that, run, a,bit,too   ,       long)
+  #   """)
+  #   expected_formatted_code = textwrap.dedent("""\
+  #       function_name(
+  #          args, that, run, a, bit, too,
+  #          long)
+  #   """)
+  #   self._Check(unformatted_code, expected_formatted_code)
+
+  # def testBreaksLongArgsListBeforeFirstArgWhenIndentedWithGarbageSpace(self):
+  #   self.config['COLUMN_LIMIT'] = 32
+  #   self.config['INDENT_WIDTH'] = 2
+  #   self.config['CONTINUATION_INDENT_WIDTH'] = 3
+  #   self.config['SPLIT_BEFORE_FIRST_ARGUMENT'] = True
+  #   unformatted_code = textwrap.dedent("""\
+  #       if True:
+  #         if True:
+  #           function_name(args, that, run, a,bit,too   ,       long)
+  #   """)
+  #   expected_formatted_code = textwrap.dedent("""\
+  #       if True:
+  #         if True:
+  #           function_name(
+  #              args, that, run, a, bit,
+  #              too, long)
+  #   """)
+  #   self._Check(unformatted_code, expected_formatted_code)
+
+  # def testDoesntBreakLongArgsListThatsOnlyLongBecauseOfGarbageSpace(self):
+  #   self.config['COLUMN_LIMIT'] = 32
+  #   self.config['INDENT_WIDTH'] = 2
+  #   unformatted_code = textwrap.dedent("""\
+  #       function_name(arg1,        arg2,         aarg3)
+  #   """)
+  #   expected_formatted_code = textwrap.dedent("""\
+  #       function_name(arg1, arg2, aarg3)
+  #   """)
+  #   self._Check(unformatted_code, expected_formatted_code)
+
+  # def testBreaksLongArgsListThatsOnlyShortBecauseOfMissingSpace(self):
+  #   self.config['COLUMN_LIMIT'] = 32
+  #   self.config['INDENT_WIDTH'] = 2
+  #   unformatted_code = textwrap.dedent("""\
+  #       function_name(ar1,ar2,ar3,ar4)
+  #   """)
+  #   expected_formatted_code = textwrap.dedent("""\
+  #       function_name(ar1, ar2, ar3,
+  #                     ar4)
+  #   """)
+  #   self._Check(unformatted_code, expected_formatted_code)

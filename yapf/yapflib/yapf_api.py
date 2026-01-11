@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Entry points for YAPF.
+TODO+++++++++
 
 The main APIs that YAPF exposes to drive the reformatting.
 
@@ -105,6 +106,7 @@ def FormatFile(filename,
   return reformatted_source, encoding, changed
 
 
+# TODO remove+++++++++++++++
 def FormatTree(tree, style_config=None, lines=None):
   """Format a parsed lib2to3 pytree.
 
@@ -142,6 +144,7 @@ def FormatTree(tree, style_config=None, lines=None):
   return reformatter.Reformat(_SplitSemicolons(llines), lines)
 
 
+# TODO remove+++++++++++++++
 def FormatAST(ast, style_config=None, lines=None):
   """Format a parsed lib2to3 pytree.
 
@@ -171,8 +174,8 @@ def FormatAST(ast, style_config=None, lines=None):
   return reformatter.Reformat(_SplitSemicolons(llines), lines)
 
 
-def FormatCode(unformatted_source,
-               filename='<unknown>',
+def FormatCode(unformatted_source: str,
+               filename: str = '<unknown>',
                style_config=None,
                lines=None,
                print_diff=False):
@@ -198,12 +201,19 @@ def FormatCode(unformatted_source,
     desired formatting style. changed is True if the source changed.
   """
   try:
-    tree = pytree_utils.ParseCodeToTree(unformatted_source)
+    # TODO won't work with code snippets+++++++++++
+    module = cst.parse_module(unformatted_source)
   except Exception as e:
-    e.filename = filename
     raise errors.YapfError(errors.FormatErrorMsg(e))
+  # try:
+  #   tree = pytree_utils.ParseCodeToTree(unformatted_source)
+  # except Exception as e:
+  #   e.filename = filename
+  #   raise errors.YapfError(errors.FormatErrorMsg(e))
 
-  reformatted_source = FormatTree(tree, style_config=style_config, lines=lines)
+  # reformatted_source = FormatTree(tree, style_config=style_config, lines=lines)
+  reformatted_source = FormatCstModule(
+      module, style_config=style_config, lines=lines)
 
   if unformatted_source == reformatted_source:
     return '' if print_diff else reformatted_source, False
@@ -217,10 +227,33 @@ def FormatCode(unformatted_source,
 
 
 def FormatCstModule(module: cst.Module, style_config=None, lines=None):
+  """TODO+++++++++++++++
+  """
+  #PERF can we use unsafe_skip_copy?++++++++++++++
+  wrapper = cst.MetadataWrapper(module, unsafe_skip_copy=True)
   config = style.CreateStyleFromConfig(style_config)
-  formatter = cst_formatter.ModuleFormatter(module, config)
-  formatted_module = module.visit(formatter)
+  # TODO also handle lines+++++++++
+  # module.visit(format.ParamPrinter())
+  # return module.module.code
+  formatter = format.ModuleFormatter(module, config)
+  formatted_module = wrapper.visit(formatter)
   return formatted_module.code
+
+  # Run passes on the tree, modifying it in place.
+  # comment_splicer.SpliceComments(module)
+  # continuation_splicer.SpliceContinuations(module)
+  # subtype_assigner.AssignSubtypes(module)
+  # identify_container.IdentifyContainers(module)
+  # split_penalty.ComputeSplitPenalties(module)
+  # blank_line_calculator.CalculateBlankLines(module)
+
+  # llines = cst_unwrapper.UnwrapModule(module)
+  # for lline in llines:
+  #   lline.CalculateFormattingInformation()
+
+  # lines = _LineRangesToSet(lines)
+  # _MarkLinesToFormat(llines, lines)
+  # return reformatter.Reformat(_SplitSemicolons(llines), lines)
 
 
 def ReadFile(filename, logger=None):
@@ -264,6 +297,7 @@ def ReadFile(filename, logger=None):
     raise
 
 
+# TODO use this? at least test?+++++++++
 def _SplitSemicolons(lines):
   res = []
   for line in lines:
@@ -275,6 +309,7 @@ DISABLE_PATTERN = r'^#.*\b(?:yapf:\s*disable|fmt: ?off)\b'
 ENABLE_PATTERN = r'^#.*\b(?:yapf:\s*enable|fmt: ?on)\b'
 
 
+# TODO use this? at least test?+++++++++
 def _LineRangesToSet(line_ranges):
   """Return a set of lines in the range."""
 
@@ -288,6 +323,7 @@ def _LineRangesToSet(line_ranges):
   return line_set
 
 
+# TODO use this? at least test?+++++++++
 def _MarkLinesToFormat(llines, lines):
   """Skip sections of code that we shouldn't reformat."""
   if lines:
@@ -316,6 +352,7 @@ def _MarkLinesToFormat(llines, lines):
     index += 1
 
 
+# TODO use this? at least test?+++++++++
 def _DisableYAPF(line):
   return (re.search(DISABLE_PATTERN,
                     line.split('\n')[0].strip(), re.IGNORECASE) or
