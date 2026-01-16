@@ -1,11 +1,36 @@
 import textwrap
+import unittest.mock as um
 
 import libcst as cst
+import pytest
 
-from yapf.yapflib import format
-from yapf.yapflib import style
-
+from yapf.yapflib import format, split, style
 from yapftests import yapf_test_helper
+
+
+class MockedSplitLine(um.Mock):
+
+  def __init__(self):
+    super().__init__(spec=split.split_line, side_effect=self.call)
+    self._return_lines = None
+
+  def call(self, config: style.Config, line: cst.SimpleStatementLine,
+           current_indent_level: int) -> cst.SimpleStatementLine:
+    if self._return_lines is not None:
+      return self._return_lines.pop(0)
+    return line
+
+  def append_return_line(self, line_string: str):
+    line = cst.parse_statement(line_string)
+    assert isinstance(line, cst.SimpleStatementLine)
+    self._return_lines = self._return_lines or []
+    self._return_lines.append(line)
+
+
+@pytest.fixture(autouse=True)
+def mocked_split_line(monkeypatch: pytest.MonkeyPatch) -> MockedSplitLine:
+  monkeypatch.setattr(split, 'split_line', MockedSplitLine())
+  return split.split_line
 
 
 class FormatterTest(yapf_test_helper.YAPFTest):
@@ -243,6 +268,55 @@ class ModuleFormatterTest(FormatterTest):
         {a: None, b: None}
     """)
     self._Check(unformatted_code, expected_formatted_code)
+
+  def testCallsLineFormatterOnSingleLine(self):
+    split.split_line.append_return_line('b = 2')
+    unformatted_code = textwrap.dedent("""\
+        a = 1
+    """)
+    expected_formatted_code = textwrap.dedent("""\
+        b = 2
+    """)
+    self._Check(unformatted_code, expected_formatted_code)
+    assert split.split_line.call_args_list == [um.call(self.config, um.ANY, 0)]
+
+  def testCallsLineFormatterOnMultipleLines(self):
+    split.split_line.append_return_line('b = 2')
+    split.split_line.append_return_line('y = 20')
+    unformatted_code = textwrap.dedent("""\
+          a = 1
+          x = 10
+      """)
+    expected_formatted_code = textwrap.dedent("""\
+          b = 2
+          y = 20
+      """)
+    self._Check(unformatted_code, expected_formatted_code)
+    assert split.split_line.call_args_list == [
+        um.call(self.config, um.ANY, 0),
+        um.call(self.config, um.ANY, 0)
+    ]
+
+  def testCallsLineFormatterWithCorrectIndent(self):
+    split.split_line.append_return_line('b = 2')
+    split.split_line.append_return_line('y = 20')
+    unformatted_code = textwrap.dedent("""\
+          if True:
+              a = 1
+              if True:
+                  x = 10
+      """)
+    expected_formatted_code = textwrap.dedent("""\
+          if True:
+              b = 2
+              if True:
+                  y = 20
+      """)
+    self._Check(unformatted_code, expected_formatted_code)
+    assert split.split_line.call_args_list == [
+        um.call(self.config, um.ANY, 1),
+        um.call(self.config, um.ANY, 2)
+    ]
 
 
 class CallFormatterTest(FormatterTest):

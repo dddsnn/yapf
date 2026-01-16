@@ -1,6 +1,6 @@
 import libcst as cst
 
-from yapf.yapflib import style
+from yapf.yapflib import split, style
 
 VisitorLeaveUpdate = (
     cst.CSTNodeT | cst.RemovalSentinel | cst.FlattenSentinel[cst.CSTNodeT])
@@ -63,6 +63,12 @@ class ModuleFormatter(BaseFormatter):
     assert original_node is updated_node  # We've not visited children.
     call_formatter = CallFormatter(self._module, self._config, updated_node)
     return updated_node.visit(call_formatter)
+
+  def leave_SimpleStatementLine(
+      self, original_node: cst.SimpleStatementLine,
+      updated_node: cst.SimpleStatementLine) -> VisitorLeaveUpdate:
+    return split.split_line(self._config, updated_node,
+                            self._current_indent_level)
 
 
 class CallFormatter(BaseFormatter):
