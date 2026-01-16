@@ -29,6 +29,7 @@ class ModuleFormatter(BaseFormatter):
 
   def __init__(self, module: cst.Module, config: style.Config):
     super().__init__(module, config)
+    self._current_indent_level = 0
 
   def visit_Module(self, node: cst.Module) -> bool:
     if node is not self._module:
@@ -40,9 +41,15 @@ class ModuleFormatter(BaseFormatter):
                    updated_node: cst.Module) -> VisitorLeaveUpdate:
     return updated_node.with_changes(has_trailing_newline=True)
 
+  def visit_IndentedBlock(self, node: cst.IndentedBlock) -> bool:
+    self._current_indent_level += 1
+    return True
+
   def leave_IndentedBlock(
       self, original_node: cst.IndentedBlock,
       updated_node: cst.IndentedBlock) -> VisitorLeaveUpdate:
+    assert self._current_indent_level > 0
+    self._current_indent_level -= 1
     indent_char = '\t' if self._config['USE_TABS'] else ' '
     indent = indent_char * self._config['INDENT_WIDTH']
     return updated_node.with_changes(indent=indent)
