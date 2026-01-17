@@ -34,7 +34,11 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-test = ['pytest (>=9.0.2,<10)', 'pytest-cov (>=7.0.0,<8)']
+test = [
+    'precisely (==0.1.9)',
+    'pytest (>=9.0.2,<10)',
+    'pytest-cov (>=7.0.0,<8)'
+]
 
 [project.scripts]
 yapf = "yapf:run_main"
