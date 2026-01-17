@@ -21,6 +21,7 @@ import sys
 import tempfile
 import unittest.mock as um
 
+import libcst as cst
 import precisely.base
 import precisely.coercion
 import precisely.results
@@ -171,9 +172,40 @@ class ExactCallMatcher(precisely.base.Matcher):
             call.describe() for call in self._calls))
 
 
+class SimpleStatementLineMatcher(precisely.base.Matcher):
+
+  def __init__(self, line_string: str):
+    self._line_string = line_string
+    self._line = cst.parse_statement(line_string)
+    assert isinstance(self._line, cst.SimpleStatementLine)
+
+  def match(self, actual) -> precisely.results.Result:
+    if not isinstance(actual, cst.SimpleStatementLine):
+      return precisely.results.unmatched('was not a SimpleStatementLine')
+    if not self._line.deep_equals(actual):
+      actual_string = self._render_string(actual)
+      return precisely.results.unmatched(
+          f'was a SimpleStatementLine "{actual_string}"')
+    return precisely.results.matched()
+
+  def _render_string(self, line):
+    module = cst.Module(body=[line])
+    line_string = module.code_for_node(line)
+    # The module adds a trailing newline.
+    assert line_string[-1] == '\n'
+    return line_string[:-1]
+
+  def describe(self):
+    return f'a SimpleStatementLine "{self._line_string}"'
+
+
 def mock_call(*args, **kwargs) -> MockCallMatcher:
   return MockCallMatcher(args, kwargs)
 
 
 def called_exactly_with(*calls: MockCallMatcher) -> ExactCallMatcher:
   return ExactCallMatcher(calls)
+
+
+def simple_statement_line(line_string: str) -> SimpleStatementLineMatcher:
+  return SimpleStatementLineMatcher(line_string)
