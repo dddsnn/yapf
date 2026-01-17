@@ -3,9 +3,11 @@ import unittest.mock as um
 
 import libcst as cst
 import pytest
+from precisely import anything, assert_that
 
 from yapf.yapflib import format, split, style
 from yapftests import yapf_test_helper
+from yapftests.utils import called_exactly_with, mock_call
 
 
 class MockedSplitLine(um.Mock):
@@ -278,7 +280,8 @@ class ModuleFormatterTest(FormatterTest):
         b = 2
     """)
     self._Check(unformatted_code, expected_formatted_code)
-    assert split.split_line.call_args_list == [um.call(self.config, um.ANY, 0)]
+    assert_that(split.split_line,
+                called_exactly_with(mock_call(self.config, anything, 0)))
 
   def testCallsLineFormatterOnMultipleLines(self):
     split.split_line.append_return_line('b = 2')
@@ -292,10 +295,11 @@ class ModuleFormatterTest(FormatterTest):
           y = 20
       """)
     self._Check(unformatted_code, expected_formatted_code)
-    assert split.split_line.call_args_list == [
-        um.call(self.config, um.ANY, 0),
-        um.call(self.config, um.ANY, 0)
-    ]
+    assert_that(
+        split.split_line,
+        called_exactly_with(
+            mock_call(self.config, anything, 0),
+            mock_call(self.config, anything, 0)))
 
   def testCallsLineFormatterWithCorrectIndent(self):
     split.split_line.append_return_line('b = 2')
@@ -313,10 +317,11 @@ class ModuleFormatterTest(FormatterTest):
                   y = 20
       """)
     self._Check(unformatted_code, expected_formatted_code)
-    assert split.split_line.call_args_list == [
-        um.call(self.config, um.ANY, 1),
-        um.call(self.config, um.ANY, 2)
-    ]
+    assert_that(
+        split.split_line,
+        called_exactly_with(
+            mock_call(self.config, anything, 1),
+            mock_call(self.config, anything, 2)))
 
 
 class CallFormatterTest(FormatterTest):

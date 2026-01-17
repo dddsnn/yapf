@@ -19,6 +19,11 @@ import io
 import os
 import sys
 import tempfile
+import unittest.mock as um
+
+import precisely.base
+import precisely.coercion
+import precisely.results
 
 
 @contextlib.contextmanager
@@ -82,3 +87,93 @@ def TempFileContents(dirname,
     f.write(contents)
     f.flush()
     yield fname
+
+
+class MockCallMatcher(precisely.base.Matcher):
+
+  def __init__(self, call_args, call_kwargs):
+    self._call_args = call_args
+    self._call_kwargs = call_kwargs
+
+  def match(self, actual) -> precisely.results.Result:
+    if not isinstance(actual, um._Call):
+      return precisely.results.unmatched('was not a mock call')
+    actual_args, actual_kwargs = actual
+    if len(self._call_args) != len(actual_args):
+      return precisely.results.unmatched(
+          f'expected {len(self._call_args)} args, but got {len(actual_args)}')
+    if set(self._call_kwargs) != set(actual_kwargs):
+      return precisely.results.unmatched(
+          f'expected kwargs {set(self._call_kwargs)}, but got '
+          f'{set(actual_kwargs)}')
+    for i, (arg, actual_arg) in enumerate(zip(self._call_args, actual_args)):
+      result = precisely.coercion.to_matcher(arg).match(actual_arg)
+      if not result.is_match:
+        return precisely.results.unmatched('arg {} {}'.format(
+            i, result.explanation))
+    for key in self._call_kwargs:
+      kwarg = self._call_kwargs[key]
+      actual_kwarg = actual_kwargs[key]
+      result = precisely.coercion.to_matcher(kwarg).match(actual_kwarg)
+      if not result.is_match:
+        return precisely.results.unmatched('kwarg {} {}'.format(
+            key, result.explanation))
+    return precisely.results.matched()
+
+  def describe(self):
+    return 'a mock call with:{}'.format(
+        precisely.results.indented_list(
+            [self._describe_args(),
+             self._describe_kwargs()]))
+
+  def _describe_args(self):
+    if not self._call_args:
+      return 'no args'
+    return 'args:{}'.format(
+        precisely.results.indented_list(
+            precisely.coercion.to_matcher(arg).describe()
+            for arg in self._call_args))
+
+  def _describe_kwargs(self):
+    if not self._call_kwargs:
+      return 'no kwargs'
+    return 'kwargs:{}'.format(
+        precisely.results.indented_list([
+            '{}={}'.format(key,
+                           precisely.coercion.to_matcher(value).describe())
+            for key, value in self._call_kwargs.items()
+        ]))
+
+
+class ExactCallMatcher(precisely.base.Matcher):
+
+  def __init__(self, calls: tuple[MockCallMatcher]):
+    self._calls = calls
+
+  def match(self, actual) -> precisely.results.Result:
+    if not isinstance(actual, um.Mock):
+      return precisely.results.unmatched('was not a mock')
+    if len(self._calls) != len(actual.call_args_list):
+      return precisely.results.unmatched(
+          f'expected {len(self._calls)} calls, but got '
+          f'{len(actual.call_args_list)}')
+    zipped_calls = zip(self._calls, actual.call_args_list)
+    for i, (call, actual_call) in enumerate(zipped_calls):
+      result = precisely.coercion.to_matcher(call).match(actual_call)
+      if not result.is_match:
+        return precisely.results.unmatched('call {} {}'.format(
+            i, result.explanation))
+    return precisely.results.matched()
+
+  def describe(self):
+    return 'a mock that was called with:{}'.format(
+        precisely.results.indented_list(
+            call.describe() for call in self._calls))
+
+
+def mock_call(*args, **kwargs) -> MockCallMatcher:
+  return MockCallMatcher(args, kwargs)
+
+
+def called_exactly_with(*calls: MockCallMatcher) -> ExactCallMatcher:
+  return ExactCallMatcher(calls)
